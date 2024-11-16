@@ -44,6 +44,21 @@ void insertion_sort(T* first, T* last, Comp comp)
     }
 }
 
+// Функция для вычисления коэффициента нарушений убывающего порядка
+template<typename T>
+double violation_coeff(T* first, T* last) 
+{
+    int violations = 0;
+
+    for (T* it = first + 1; it < last; ++it) {
+        if (*it > *(it - 1)) { // Если порядок убывания нарушен
+            ++violations;
+        }
+    }
+
+    return static_cast<double>(violations) / (distance(first, last) - 1);
+}
+
 template<typename T, typename Comp>
 void quick_sort(T* first, T* last, Comp comp) 
 {
@@ -57,8 +72,11 @@ void quick_sort(T* first, T* last, Comp comp)
         
         if (size <= treshold)
         {
-            insertion_sort(first, last, comp);
-            return;
+            if (violation_coeff(first, last) > 0.1)
+            {
+                insertion_sort(first, last, comp);
+                return;
+            }
         }
 
         T reference_element = select_reference_element_as_median(first, first + size / 2, last - 1, comp);
