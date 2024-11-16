@@ -6,7 +6,7 @@
 using namespace std;
 
 template<typename T, typename Comp>
-T select_reference_element_as_median(T* first, T* mid, T* last, Comp comp) 
+T& select_reference_element_as_median(T* first, T* mid, T* last, Comp comp)
 {
     if (comp(*mid, *first)) { 
         swap(*mid, *first);
@@ -21,6 +21,9 @@ T select_reference_element_as_median(T* first, T* mid, T* last, Comp comp)
     return *mid;
 }
 
+// Наихудший случай для сортировки вставками — это массив, отсортированный в обратном порядке. 
+// В этом случае для каждого элемента нужно выполнить наибольшее количество операций по сдвигу элементов. 
+// Тестирование на таком массиве позволяет выявить худшую производительность, что важно для выбора оптимального порога при гибридной сортировке.
 template<typename T, typename Comp>
 void insertion_sort(T* first, T* last, Comp comp)
 {
@@ -42,16 +45,17 @@ void insertion_sort(T* first, T* last, Comp comp)
 }
 
 template<typename T, typename Comp>
-void fast_sort(T* first, T* last, Comp comp) 
+void quick_sort(T* first, T* last, Comp comp) 
 {
     // Граница, при которой используется сортировка вставками
-    constexpr int treshold = 10;
+    constexpr int treshold = 90;
 
     while (distance(first, last) > 1) 
     {
         int size = distance(first, last);
 
-        if (size <= treshold) 
+        
+        if (size <= treshold)
         {
             insertion_sort(first, last, comp);
             return;
@@ -83,7 +87,9 @@ void fast_sort(T* first, T* last, Comp comp)
             }
 
             // Меняем местами элементы, которые находятся "не на своих местах"
-            swap(*left, *right);
+            T helper = move(*left);
+            *left = move(*right);
+            *right = move(helper);
 
             // Теперь нужно:
             // 1) Пропустить уже обработанные элементы.
@@ -100,12 +106,12 @@ void fast_sort(T* first, T* last, Comp comp)
         // Сортируем меньший интервал рекурсивно и продолжаем итеративно сортировать больший интервал
         if (distance(first, mid) < distance(mid, last)) 
         {
-            sort(first, mid, comp);
+            quick_sort(first, mid, comp);
             first = mid;
         }
         else 
         {
-            sort(mid, last, comp);
+            quick_sort(mid, last, comp);
             last = mid;
         }
     }

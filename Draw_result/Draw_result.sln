@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Draw_result", "Draw_result\Draw_result.pyproj", "{FB2BF0CE-7005-45E9-AF8E-B79060F3F94A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FB2BF0CE-7005-45E9-AF8E-B79060F3F94A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB2BF0CE-7005-45E9-AF8E-B79060F3F94A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {36957B1F-50C0-45D7-8ABD-F9E0E7DBAEFB}
+	EndGlobalSection
+EndGlobal

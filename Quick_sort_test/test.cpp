@@ -19,8 +19,8 @@ TEST(No_need_sort_arrays)
     vector<int> empy_arr;
     vector<int> arr = { 1 };
 
-    fast_sort(empy_arr.data(), empy_arr.data() + empy_arr.size(), [](int a, int b) { return a < b; });
-    fast_sort(arr.data(), arr.data() + arr.size(), [](int a, int b) { return a < b; });
+    quick_sort(empy_arr.data(), empy_arr.data() + empy_arr.size(), less<int>());
+    quick_sort(arr.data(), arr.data() + arr.size(), less<int>());
 
     EXPECT_TRUE(empy_arr.empty());
     EXPECT_EQ(arr, vector<int>({ 1 }));
@@ -31,7 +31,7 @@ TEST(Two_elem_array)
 {
     vector<int> arr = { 2, 1 };
 
-    fast_sort(arr.data(), arr.data() + arr.size(), [](int a, int b) { return a < b; });
+    quick_sort(arr.data(), arr.data() + arr.size(), less<int>());
 
     EXPECT_EQ(arr, vector<int>({ 1, 2 }));
 }
@@ -41,7 +41,7 @@ TEST(Array_with_negative_elems)
 {
     vector<int> arr = { 3, -1, 2, -5, 0 };
 
-    fast_sort(arr.data(), arr.data() + arr.size(), [](int a, int b) { return a < b; });
+    quick_sort(arr.data(), arr.data() + arr.size(), less<int>());
 
     EXPECT_EQ(arr, vector<int>({ -5, -1, 0, 2, 3 }));
 }
@@ -51,8 +51,8 @@ TEST(Sorted_arrays) {
     vector<int> sorted_arr = { 1, 2, 3, 4, 5 };
     vector<int> reverse_sorted_arr = { 5, 4, 3, 2, 1 };
 
-    fast_sort(sorted_arr.data(), sorted_arr.data() + sorted_arr.size(), [](int a, int b) { return a < b; });
-    fast_sort(reverse_sorted_arr.data(), reverse_sorted_arr.data() + reverse_sorted_arr.size(), [](int a, int b) { return a < b; });
+    quick_sort(sorted_arr.data(), sorted_arr.data() + sorted_arr.size(), less<int>());
+    quick_sort(reverse_sorted_arr.data(), reverse_sorted_arr.data() + reverse_sorted_arr.size(), less<int>());
 
     EXPECT_EQ(sorted_arr, vector<int>({ 1, 2, 3, 4, 5 }));
     EXPECT_EQ(reverse_sorted_arr, vector<int>({ 1, 2, 3, 4, 5 }));
@@ -63,7 +63,7 @@ TEST(Array_with_dublicates)
 {
     vector<int> arr = { 3, 1, 2, 3, 2, 1 };
 
-    fast_sort(arr.data(), arr.data() + arr.size(), [](int a, int b) { return a < b; });
+    quick_sort(arr.data(), arr.data() + arr.size(), less<int>());
 
     EXPECT_EQ(arr, vector<int>({ 1, 1, 2, 2, 3, 3 }));
 }
@@ -79,7 +79,7 @@ TEST(Array_with_10000_elems)
         arr[i] = N - i; 
     }
 
-    fast_sort(arr.data(), arr.data() + arr.size(), [](int a, int b) { return a < b; });
+    quick_sort(arr.data(), arr.data() + arr.size(), less<int>());
 
     for (int i = 0; i < N; ++i) {
         EXPECT_EQ(arr[i], i + 1);
@@ -104,7 +104,7 @@ TEST(Custom_array)
 {
     vector<Custom> arr = { {2, 2.1}, {2, 1.2}, {1, 1.1} };
 
-    fast_sort(arr.data(), arr.data() + arr.size(), [](const Custom& a, const Custom& b) { return a < b; });
+    quick_sort(arr.data(), arr.data() + arr.size(), [](const Custom& a, const Custom& b) { return a < b; });
 
     EXPECT_EQ(arr[0].key, 1);
     EXPECT_EQ(arr[1].key, 2);
