@@ -8,17 +8,22 @@ using namespace std;
 template<typename T, typename Comp>
 T& select_reference_element_as_median(T* first, T* mid, T* last, Comp comp)
 {
-    if (comp(*mid, *first)) {
+    if (comp(*mid, *first)) 
+    {
         T helper = move(*mid);
         *mid = move(*first);
         *first = move(helper);
     }
-    if (comp(*last, *mid)) {
+
+    if (comp(*last, *mid)) 
+    {
         T helper = move(*last);
         *last = move(*mid);
         *mid = move(helper);
     }
-    if (comp(*last, *first)) {
+
+    if (comp(*last, *first)) 
+    {
         T helper = move(*last);
         *last = move(*first);
         *first = move(helper);
