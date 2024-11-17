@@ -45,13 +45,13 @@ void insertion_sort(T* first, T* last, Comp comp)
 }
 
 // Функция для вычисления коэффициента нарушений убывающего порядка
-template<typename T>
-double violation_coeff(T* first, T* last) 
+template<typename T, typename Comp>
+double violation_coeff(T* first, T* last, Comp comp) 
 {
     int violations = 0;
 
     for (T* it = first + 1; it < last; ++it) {
-        if (*it > *(it - 1)) { // Если порядок убывания нарушен
+        if (comp(*(it - 1), *it)) {  // Если порядок убывания нарушен
             ++violations;
         }
     }
@@ -72,7 +72,7 @@ void quick_sort(T* first, T* last, Comp comp)
         
         if (size <= treshold)
         {
-            if (violation_coeff(first, last) > 0.1)
+            if (violation_coeff(first, last, comp) > 0.1)
             {
                 insertion_sort(first, last, comp);
                 return;
@@ -130,6 +130,55 @@ void quick_sort(T* first, T* last, Comp comp)
         else 
         {
             quick_sort(mid, last, comp);
+            last = mid;
+        }
+    }
+}
+
+template<typename T, typename Comp>
+void classic_quick_sort(T* first, T* last, Comp comp)
+{
+    while (distance(first, last) > 1)
+    {
+        int size = distance(first, last);
+
+        T reference_element = select_reference_element_as_median(first, first + size / 2, last - 1, comp);
+
+        T* left = first;
+        T* right = last - 1;
+
+        while (true)
+        {
+            while (comp(*left, reference_element)) {
+                ++left;
+            }
+
+            while (comp(reference_element, *right)) {
+                --right;
+            }
+
+            if (left >= right) {
+                break;
+            }
+
+            T helper = move(*left);
+            *left = move(*right);
+            *right = move(helper);
+
+            ++left;
+            --right;
+        }
+
+        T* mid = left;
+
+        if (distance(first, mid) < distance(mid, last))
+        {
+            classic_quick_sort(first, mid, comp);
+            first = mid;
+        }
+        else
+        {
+            classic_quick_sort(mid, last, comp);
             last = mid;
         }
     }

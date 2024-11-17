@@ -7,6 +7,8 @@
 #include <numeric>
 #include <fstream>
 #include "Quick_sort.h"
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include "../nanobench/src/include/nanobench.h"
 
 using namespace std;
 using namespace chrono;
@@ -46,7 +48,8 @@ double measure_time(Func&& func)
     return duration<double>(end - start).count();
 }
 
-void save_results_to_csv(const vector<int>& sizes, const vector<double>& rand_is, const vector<double>& rand_qs, const vector<double>& rev_is, const vector<double>& rev_qs)
+void save_results_to_csv(const vector<int>& sizes, const vector<double>& rand_is, 
+    const vector<double>& rand_qs, const vector<double>& rev_is, const vector<double>& rev_qs)
 {
     ofstream file("results.csv");
 
@@ -66,19 +69,19 @@ void save_results_to_csv(const vector<int>& sizes, const vector<double>& rand_is
     file.close();
 }
 
-int main()
+void chrono_tests()
 {
     vector<int> array_sizes;
-    vector<double> random_insertion_sort_times;  
-    vector<double> random_quick_sort_times;         
-    vector<double> reverse_insertion_sort_times;    
-    vector<double> reverse_quick_sort_times;        
+    vector<double> random_insertion_sort_times;
+    vector<double> random_quick_sort_times;
+    vector<double> reverse_insertion_sort_times;
+    vector<double> reverse_quick_sort_times;
 
     random_device rd;           // Устройство для генерации случайного числа
     int random_numb = rd();     // Случайное число для инициализации генератора
 
-    int tries = 100; 
-    double min_time;       
+    int tries = 100;
+    double min_time;
 
     vector<int> vec;
 
@@ -132,6 +135,85 @@ int main()
     }
 
     save_results_to_csv(array_sizes, random_insertion_sort_times, random_quick_sort_times, reverse_insertion_sort_times, reverse_quick_sort_times);
+}
+
+void nanobench_tests()
+{
+    vector<int> array_sizes;
+    vector<double> random_insertion_sort_times;
+    vector<double> random_quick_sort_times;
+    vector<double> reverse_insertion_sort_times;
+    vector<double> reverse_quick_sort_times;
+
+    random_device rd;
+    int random_numb = rd();
+
+    vector<int> vec;
+
+    ankerl::nanobench::Bench bench;
+
+    for (int i = 50; i <= 150; i += 1) {
+        array_sizes.push_back(i);
+    }
+
+    for (int size : array_sizes)
+    {
+        cout << "Size = " << size << "\n";
+
+
+        vec = generate_random_vector(size, random_numb + size);
+
+        // Создаём объект для измерения времени
+        // Конструктор Bench() создаёт объект для выполнения бенчмарков
+        // warmup() задаёт количество прогревочных запусков
+        // minEpochIterations() устанавливает минимальное количество запусков тестируемой функции в одной "эпохе".
+        // Эпоха — это набор запусков функции, за которые измеряется время выполнения.
+        bench = ankerl::nanobench::Bench().warmup(50).minEpochIterations(200);
+
+        // Запускаем измерение времени для функции быстрой сортировки
+        bench.run("Random Array | insertion_sort", [&]() {insertion_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+
+        // Получаем медианное время выполнения в наносекундах
+        random_insertion_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
+
+
+        vec = generate_random_vector(size, random_numb + size);
+
+        bench = ankerl::nanobench::Bench().warmup(50).minEpochIterations(200);
+
+        bench.run("Random Array | quick_sort", [&]() {classic_quick_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+
+        random_quick_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
+
+
+        vec = generate_reverse_sorted_vector(size);
+
+        bench = ankerl::nanobench::Bench().warmup(20).minEpochIterations(30);
+
+        bench.run("Reverse Array | insertion_sort ", [&]() {insertion_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+
+        reverse_insertion_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
+
+
+        vec = generate_reverse_sorted_vector(size);
+
+        bench = ankerl::nanobench::Bench().warmup(20).minEpochIterations(30);
+
+        bench.run("Reverse Array | quick_sort", [&]() {classic_quick_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+
+        reverse_quick_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
+
+    }
+
+    save_results_to_csv(array_sizes, random_insertion_sort_times, random_quick_sort_times, reverse_insertion_sort_times, reverse_quick_sort_times);
+
+}
+
+int main()
+{
+    chrono_tests();
+
+    //nanobench_tests();
 
     return 0;
 }
