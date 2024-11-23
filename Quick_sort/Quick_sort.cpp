@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <vector>
+#include <string>
 #include <algorithm>
 #include <chrono>
 #include <random>
@@ -13,6 +14,7 @@
 using namespace std;
 using namespace chrono;
 
+// Генерация случайного вектора
 vector<int> generate_random_vector(int size, int random_number)
 {
     mt19937 gen(random_number);
@@ -25,6 +27,7 @@ vector<int> generate_random_vector(int size, int random_number)
     return v;
 }
 
+// Генерация вектора обратноотсортированного
 vector<int> generate_reverse_sorted_vector(int size)
 {
     vector<int> v(size);
@@ -35,7 +38,7 @@ vector<int> generate_reverse_sorted_vector(int size)
     return v;
 }
 
-// Функция для измерения времени выполнения
+// Функция для измерения времени выполнения с #include <chrono>
 template <typename Func>
 double measure_time(Func&& func) 
 {
@@ -48,6 +51,7 @@ double measure_time(Func&& func)
     return duration<double>(end - start).count();
 }
 
+// Сохранение результатов
 void save_results_to_csv(const vector<int>& sizes, const vector<double>& rand_is, 
     const vector<double>& rand_qs, const vector<double>& rev_is, const vector<double>& rev_qs)
 {
@@ -69,6 +73,24 @@ void save_results_to_csv(const vector<int>& sizes, const vector<double>& rand_is
     file.close();
 }
 
+// Вспомогательые функции запуска тестов
+void insertion_sort_test(vector<int> vec)
+{
+    vector<int> vec_copy = vec;
+
+    insertion_sort(vec_copy.data(), vec_copy.data() + vec_copy.size(), less<int>());
+}
+
+void quick_sort_test(vector<int> vec)
+{
+    vector<int> vec_copy = vec;
+
+    //  Запускать одно из двух
+    //classic_quick_sort(vec_copy.data(), vec_copy.data() + vec_copy.size(), less<int>());
+    quick_sort(vec.data(), vec.data() + vec.size(), less<int>());
+}
+
+// Запуск тестов с помощью #include <chrono>
 void chrono_tests()
 {
     vector<int> array_sizes;
@@ -80,12 +102,12 @@ void chrono_tests()
     random_device rd;           // Устройство для генерации случайного числа
     int random_numb = rd();     // Случайное число для инициализации генератора
 
-    int tries = 100;
-    double min_time;
+    int tries = 10000;
+    double time;
 
     vector<int> vec;
 
-    for (int i = 50; i <= 150; i += 1) {
+    for (int i = 2; i <= 60; i += 1) {
         array_sizes.push_back(i);
     }
 
@@ -93,50 +115,52 @@ void chrono_tests()
     {
         cout << "Size = " << size << "\n";
 
-
-        min_time = numeric_limits<double>::max();
-
-        for (int i = 0; i < tries; ++i) {
-            vec = generate_random_vector(size, random_numb);
-            min_time = min(min_time, measure_time([&]() {insertion_sort(vec.data(), vec.data() + vec.size(), less<int>()); }));
-        }
-
-        random_insertion_sort_times.push_back(min_time);
+        vec = generate_random_vector(size, random_numb);
 
 
-        min_time = numeric_limits<double>::max();
+        time = 0;
 
         for (int i = 0; i < tries; ++i) {
-            vec = generate_random_vector(size, random_numb);
-            min_time = min(min_time, measure_time([&]() {quick_sort(vec.data(), vec.data() + vec.size(), less<int>()); }));
+            time += measure_time([&]() { insertion_sort_test(vec); });
         }
 
-        random_quick_sort_times.push_back(min_time);
+        random_insertion_sort_times.push_back(time / tries);
 
 
-        min_time = numeric_limits<double>::max();
+        time = 0;
 
         for (int i = 0; i < tries; ++i) {
-            vec = generate_reverse_sorted_vector(size);
-            min_time = min(min_time, measure_time([&]() {insertion_sort(vec.data(), vec.data() + vec.size(), less<int>()); }));
+            time += measure_time([&]() { quick_sort_test(vec); });
         }
 
-        reverse_insertion_sort_times.push_back(min_time);
+        random_quick_sort_times.push_back(time / tries);
 
 
-        min_time = numeric_limits<double>::max();
+        vec = generate_reverse_sorted_vector(size);
+
+
+        time = 0;
 
         for (int i = 0; i < tries; ++i) {
-            vec = generate_reverse_sorted_vector(size);
-            min_time = min(min_time, measure_time([&]() {quick_sort(vec.data(), vec.data() + vec.size(), less<int>()); }));
+            time += measure_time([&]() { insertion_sort_test(vec); });
         }
 
-        reverse_quick_sort_times.push_back(min_time);
+        reverse_insertion_sort_times.push_back(time / tries);
+
+
+        time = 0;
+
+        for (int i = 0; i < tries; ++i) {
+            time += measure_time([&]() {quick_sort_test(vec); });
+        }
+
+        reverse_quick_sort_times.push_back(time / tries);
     }
 
     save_results_to_csv(array_sizes, random_insertion_sort_times, random_quick_sort_times, reverse_insertion_sort_times, reverse_quick_sort_times);
 }
 
+// Запуск тестов с помощью #include "../nanobench/src/include/nanobench.h"
 void nanobench_tests()
 {
     vector<int> array_sizes;
@@ -149,10 +173,11 @@ void nanobench_tests()
     int random_numb = rd();
 
     vector<int> vec;
+    int warmups = 1000, epochs = 10000;
 
     ankerl::nanobench::Bench bench;
 
-    for (int i = 50; i <= 150; i += 1) {
+    for (int i = 2; i <= 60; i += 1) {
         array_sizes.push_back(i);
     }
 
@@ -163,43 +188,43 @@ void nanobench_tests()
 
         vec = generate_random_vector(size, random_numb + size);
 
+
         // Создаём объект для измерения времени
         // Конструктор Bench() создаёт объект для выполнения бенчмарков
         // warmup() задаёт количество прогревочных запусков
         // minEpochIterations() устанавливает минимальное количество запусков тестируемой функции в одной "эпохе".
         // Эпоха — это набор запусков функции, за которые измеряется время выполнения.
-        bench = ankerl::nanobench::Bench().warmup(50).minEpochIterations(200);
+        bench = ankerl::nanobench::Bench().warmup(warmups).minEpochIterations(epochs);
 
         // Запускаем измерение времени для функции быстрой сортировки
-        bench.run("Random Array | insertion_sort", [&]() {insertion_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+        bench.run("Random array | Insertion sort", [&]() {insertion_sort_test(vec); });
 
         // Получаем медианное время выполнения в наносекундах
         random_insertion_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
 
 
-        vec = generate_random_vector(size, random_numb + size);
 
-        bench = ankerl::nanobench::Bench().warmup(50).minEpochIterations(200);
+        bench = ankerl::nanobench::Bench().warmup(warmups).minEpochIterations(epochs);
 
-        bench.run("Random Array | quick_sort", [&]() {classic_quick_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+        bench.run("Random array | Quick sort", [&]() {quick_sort_test(vec); });
 
         random_quick_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
 
 
         vec = generate_reverse_sorted_vector(size);
 
-        bench = ankerl::nanobench::Bench().warmup(20).minEpochIterations(30);
 
-        bench.run("Reverse Array | insertion_sort ", [&]() {insertion_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+        bench = ankerl::nanobench::Bench().warmup(warmups).minEpochIterations(epochs);
+
+        bench.run("Reverse array | Insertion sort", [&]() {insertion_sort_test(vec); });
 
         reverse_insertion_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
 
 
-        vec = generate_reverse_sorted_vector(size);
 
-        bench = ankerl::nanobench::Bench().warmup(20).minEpochIterations(30);
+        bench = ankerl::nanobench::Bench().warmup(warmups).minEpochIterations(epochs);
 
-        bench.run("Reverse Array | quick_sort", [&]() {classic_quick_sort(vec.data(), vec.data() + vec.size(), less<int>()); });
+        bench.run("Reverse array | Quick sort", [&]() {quick_sort_test(vec); });
 
         reverse_quick_sort_times.push_back(bench.results().front().median(ankerl::nanobench::Result::Measure::elapsed));
 
@@ -211,9 +236,9 @@ void nanobench_tests()
 
 int main()
 {
-    chrono_tests();
-
-    //nanobench_tests();
+    // Запускать одно из двух
+    //chrono_tests();
+    nanobench_tests();
 
     return 0;
 }

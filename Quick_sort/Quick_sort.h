@@ -74,20 +74,22 @@ template<typename T, typename Comp>
 void quick_sort(T* first, T* last, Comp comp) 
 {
     // √раница, при которой используетс€ сортировка вставками
-    constexpr int treshold = 90;
+    constexpr int treshold = 30;
 
     while (distance(first, last) > 1) 
     {
         int size = distance(first, last);
-
         
         if (size <= treshold)
         {
+            // «апускать одно из двух
             if (violation_coeff(first, last, comp) > 0.1)
             {
                 insertion_sort(first, last, comp);
                 return;
             }
+
+            //insertion_sort(first, last, comp);
         }
 
         T reference_element = select_reference_element_as_median(first, first + size / 2, last - 1, comp);
