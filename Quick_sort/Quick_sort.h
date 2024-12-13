@@ -15,18 +15,18 @@ T& select_reference_element_as_median(T* first, T* mid, T* last, Comp comp)
         *first = move(helper);
     }
 
-    if (comp(*last, *mid)) 
-    {
-        T helper = move(*last);
-        *last = move(*mid);
-        *mid = move(helper);
-    }
-
     if (comp(*last, *first)) 
     {
         T helper = move(*last);
         *last = move(*first);
         *first = move(helper);
+    }
+
+    if (comp(*last, *mid))
+    {
+        T helper = move(*last);
+        *last = move(*mid);
+        *mid = move(helper);
     }
 
     return *mid;
